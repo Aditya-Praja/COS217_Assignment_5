@@ -8,17 +8,15 @@
     .equ AULDIGITS, 8
 
 /* Stack frame layout (64 bytes)
- *
- *  fp+0   saved x29
- *  fp+8   saved x30
- *  fp-8   ULCARRY
- *  fp-16  LINDEX
- *  fp-24  LSUMLENGTH
- *  fp-32  OSUM
- *  fp-40  OADDEND2
- *  fp-48  OADDEND1
- *  fp-56  ULSUM
- *
+ * fp+0   saved x29
+ * fp+8   saved x30
+ * fp-8   ULCARRY
+ * fp-16  LINDEX
+ * fp-24  LSUMLENGTH
+ * fp-32  OSUM
+ * fp-40  OADDEND2
+ * fp-48  OADDEND1
+ * fp-56  ULSUM
  */
     .equ ULCARRY,       -8
     .equ LINDEX,        -16
@@ -27,7 +25,7 @@
     .equ OADDEND2,      -40
     .equ OADDEND1,      -48
     .equ ULSUM,         -56
-    .equ FRAME_SIZE,     64
+    .equ FRAME_SIZE,    64
 
     .equ MAX_DIGITS, 32768
 
@@ -67,39 +65,41 @@ BigInt_add:
     bl      BigInt_larger
     str     x0, [x29, LSUMLENGTH]
 
-    /* If sum->lLength > lSumLength, clear sum->digits */
+    /* Clear all digits if needed (C clears ALL MAX_DIGITS) */
     ldr     x5, [x29, OSUM]
-    ldr     x6, [x5, LLENGTH]
-    ldr     x7, [x29, LSUMLENGTH]
-
+    ldr     x6, [x5, LLENGTH]      /* old length */
+    ldr     x7, [x29, LSUMLENGTH]  /* new needed length */
     cmp     x6, x7
-    ble     2f
+    ble     no_clear
 
-    add     x0, x5, AULDIGITS
+    /* memset(oSum->aulDigits, 0, MAX_DIGITS * 8) */
+    add     x0, x5, AULDIGITS      /* pointer to aulDigits */
     mov     x1, 0
-    lsl     x2, x7, 3
+    mov     x2, MAX_DIGITS
+    lsl     x2, x2, 3              /* bytes = MAX_DIGITS * 8 */
     bl      memset
 
-2:
-    /* ulCarry = 0; lIndex = 0 */
+no_clear:
+
+    /* ulCarry = 0, lIndex = 0 */
     mov     x0, 0
     str     x0, [x29, ULCARRY]
     str     x0, [x29, LINDEX]
 
-/* LOOP: for(lIndex < lSumLength) */
-3:
+/* LOOP: lIndex < lSumLength */
+loop:
     ldr     x1, [x29, LINDEX]
     ldr     x2, [x29, LSUMLENGTH]
     cmp     x1, x2
-    bge     4f
+    bge     endloop
 
-    /* ulSum = ulCarry, ulCarry = 0 */
+    /* ulSum = ulCarry; ulCarry = 0 */
     ldr     x3, [x29, ULCARRY]
     str     x3, [x29, ULSUM]
     mov     x3, 0
     str     x3, [x29, ULCARRY]
 
-    /* ---- Add a1 digit ---- */
+    /* Add digit from a1 */
     ldr     x4, [x29, OADDEND1]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -111,12 +111,12 @@ BigInt_add:
     str     x7, [x29, ULSUM]
 
     cmp     x7, x6
-    bhs     5f
+    bhs     no_over1
     mov     x8, 1
     str     x8, [x29, ULCARRY]
-5:
+no_over1:
 
-    /* ---- Add a2 digit ---- */
+    /* Add digit from a2 */
     ldr     x4, [x29, OADDEND2]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -128,12 +128,12 @@ BigInt_add:
     str     x7, [x29, ULSUM]
 
     cmp     x7, x6
-    bhs     6f
+    bhs     no_over2
     mov     x8, 1
     str     x8, [x29, ULCARRY]
-6:
+no_over2:
 
-    /* store result digit */
+    /* Store digit to sum */
     ldr     x4, [x29, OSUM]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -145,44 +145,44 @@ BigInt_add:
     /* lIndex++ */
     add     x1, x1, 1
     str     x1, [x29, LINDEX]
-    b       3b
 
-/* END LOOP */
-4:
-    /* If carry out, append extra digit */
+    b       loop
+
+endloop:
+
+    /* Final carry */
     ldr     x0, [x29, ULCARRY]
     cmp     x0, 1
-    bne     7f
+    bne     store_length
 
     ldr     x1, [x29, LSUMLENGTH]
     cmp     x1, MAX_DIGITS
-    beq     8f
+    beq     overflow
 
+    /* oSum->aulDigits[lSumLength] = 1 */
     ldr     x2, [x29, OSUM]
     lsl     x3, x1, 3
     add     x2, x2, AULDIGITS
     add     x2, x2, x3
-
     mov     x4, 1
     str     x4, [x2]
 
     add     x1, x1, 1
     str     x1, [x29, LSUMLENGTH]
 
-7:
-    /* sum->lLength = lSumLength */
+store_length:
+    /* oSum->lLength = lSumLength */
     ldr     x2, [x29, OSUM]
     ldr     x1, [x29, LSUMLENGTH]
     str     x1, [x2, LLENGTH]
 
     mov     x0, 1
-    b       9f
+    b       done
 
-8:
+overflow:
     mov     x0, 0
 
-9:
-    /* EPILOGUE */
+done:
     ldp     x29, x30, [sp]
     add     sp, sp, FRAME_SIZE
     ret
