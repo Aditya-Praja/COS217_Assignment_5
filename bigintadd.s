@@ -1,5 +1,4 @@
     .section .text
-    .align 2
     .global BigInt_add
     .global BigInt_larger
 
@@ -7,17 +6,7 @@
     .equ LLENGTH,   0
     .equ AULDIGITS, 8
 
-/* Stack frame layout (64 bytes)
- * fp+0   saved x29
- * fp+8   saved x30
- * fp-8   ULCARRY
- * fp-16  LINDEX
- * fp-24  LSUMLENGTH
- * fp-32  OSUM
- * fp-40  OADDEND2
- * fp-48  OADDEND1
- * fp-56  ULSUM
- */
+/* Stack frame layout (64 bytes) */
     .equ ULCARRY,       -8
     .equ LINDEX,        -16
     .equ LSUMLENGTH,    -24
@@ -29,20 +18,20 @@
 
     .equ MAX_DIGITS, 32768
 
-/*********************************************************************
- * long BigInt_larger(long l1, long l2)
- *********************************************************************/
+/*
+    long BigInt_larger(long lLength1, long lLength2)
+*/
 BigInt_larger:
     cmp x0, x1
-    bgt 1f
+    bgt first_larger
     mov x0, x1
     ret
-1:
+first_larger:
     ret
 
-/*********************************************************************
- * int BigInt_add(BigInt_T a1, BigInt_T a2, BigInt_T sum)
- *********************************************************************/
+/*
+ int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
+*/
 BigInt_add:
 
     /* PROLOGUE */
