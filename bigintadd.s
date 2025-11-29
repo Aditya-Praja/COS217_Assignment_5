@@ -128,7 +128,7 @@ no_carry:
     mov x0, 1
     b finish
 max_digits_surpassed:
-     x0, 0
+    mov x0, 0
 finish: 
     ldr x30, [sp]
     ldr x29, [sp, 8]
