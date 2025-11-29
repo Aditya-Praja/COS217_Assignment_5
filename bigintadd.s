@@ -1,10 +1,10 @@
     .section .text
 
-/* BigInt struct field offsets */
+// BigInt struct field offsets
     .equ LLENGTH,   0
     .equ AULDIGITS, 8
 
-/* Stack frame layout (64 bytes) */
+// Stack frame 
     .equ ULCARRY,       -8
     .equ LINDEX,        -16
     .equ LSUMLENGTH,    -24
@@ -16,9 +16,8 @@
 
     .equ MAX_DIGITS, 32768
 
-/*
-    long BigInt_larger(long lLength1, long lLength2)
-*/
+// long BigInt_larger(long lLength1, long lLength2)
+
     .global BigInt_larger
 BigInt_larger:
     cmp x0, x1
@@ -28,68 +27,65 @@ BigInt_larger:
 first_larger:
     ret
 
-/*
- int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
-*/
+// int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
     .global BigInt_add
 BigInt_add:
 
-    /* Prolog */
+    // prolog 
     sub     sp, sp, MAIN_STACK_BYTECOUNT
     str     x29, [sp]
     str     x30, [sp, 8]
     add     x29, sp, 0
 
-    /* Spill parameters to stack */
+    // putting the parameters into the stack 
     str     x0, [x29, OADDEND1]
     str     x1, [x29, OADDEND2]
     str     x2, [x29, OSUM]
 
-    /* Compute lSumLength = max(a1->len, a2->len) */
+    // lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength)
     ldr     x3, [x29, OADDEND1]
     ldr     x0, [x3, LLENGTH]
-
     ldr     x4, [x29, OADDEND2]
     ldr     x1, [x4, LLENGTH]
 
     bl      BigInt_larger
     str     x0, [x29, LSUMLENGTH]
 
-    /* Clear all digits if needed (C clears ALL MAX_DIGITS) */
+    // clear array if necessary, conditonal first 
     ldr     x5, [x29, OSUM]
-    ldr     x6, [x5, LLENGTH]      /* old length */
-    ldr     x7, [x29, LSUMLENGTH]  /* new needed length */
+    ldr     x6, [x5, LLENGTH]      // old length 
+    ldr     x7, [x29, LSUMLENGTH]  // new needed length 
     cmp     x6, x7
     ble     no_clear
 
-    /* memset(oSum->aulDigits, 0, MAX_DIGITS * 8) */
-    add     x0, x5, AULDIGITS      /* pointer to aulDigits */
+    // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
+    add     x0, x5, AULDIGITS      // pointer to aulDigits 
     mov     x1, 0
     mov     x2, MAX_DIGITS
-    lsl     x2, x2, 3              /* bytes = MAX_DIGITS * 8 */
+    lsl     x2, x2, 3              // MAX_DIGITS * 8
     bl      memset
 
 no_clear:
 
-    /* ulCarry = 0, lIndex = 0 */
+    // ulCarry = 0 and lIndex = 0 
     mov     x0, 0
     str     x0, [x29, ULCARRY]
     str     x0, [x29, LINDEX]
 
-/* LOOP: lIndex < lSumLength */
+// for loop lIndex < lSumLength 
 loop:
     ldr     x1, [x29, LINDEX]
     ldr     x2, [x29, LSUMLENGTH]
     cmp     x1, x2
     bge     endloop
 
-    /* ulSum = ulCarry; ulCarry = 0 */
+    // ulSum = ulCarry; ulCarry = 0 
     ldr     x3, [x29, ULCARRY]
     str     x3, [x29, ULSUM]
     mov     x3, 0
     str     x3, [x29, ULCARRY]
 
-    /* Add digit from a1 */
+    // Add digit from a1
     ldr     x4, [x29, OADDEND1]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -106,7 +102,7 @@ loop:
     str     x8, [x29, ULCARRY]
 no_over1:
 
-    /* Add digit from a2 */
+    // Add digit from a2
     ldr     x4, [x29, OADDEND2]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -123,7 +119,7 @@ no_over1:
     str     x8, [x29, ULCARRY]
 no_over2:
 
-    /* Store digit to sum */
+    // storing in sum
     ldr     x4, [x29, OSUM]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -132,15 +128,14 @@ no_over2:
     ldr     x7, [x29, ULSUM]
     str     x7, [x4]
 
-    /* lIndex++ */
+    // lIndex++ 
     add     x1, x1, 1
     str     x1, [x29, LINDEX]
 
     b       loop
 
 endloop:
-
-    /* Final carry */
+    // after loop
     ldr     x0, [x29, ULCARRY]
     cmp     x0, 1
     bne     store_length
@@ -149,7 +144,7 @@ endloop:
     cmp     x1, MAX_DIGITS
     beq     overflow
 
-    /* oSum->aulDigits[lSumLength] = 1 */
+    // oSum->aulDigits[lSumLength] = 1 
     ldr     x2, [x29, OSUM]
     lsl     x3, x1, 3
     add     x2, x2, AULDIGITS
@@ -161,7 +156,7 @@ endloop:
     str     x1, [x29, LSUMLENGTH]
 
 store_length:
-    /* oSum->lLength = lSumLength */
+    // oSum->lLength = lSumLength 
     ldr     x2, [x29, OSUM]
     ldr     x1, [x29, LSUMLENGTH]
     str     x1, [x2, LLENGTH]
