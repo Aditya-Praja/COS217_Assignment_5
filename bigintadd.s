@@ -1,6 +1,4 @@
     .section .text
-    .global BigInt_add
-    .global BigInt_larger
 
 /* BigInt struct field offsets */
     .equ LLENGTH,   0
@@ -14,13 +12,14 @@
     .equ OADDEND2,      -40
     .equ OADDEND1,      -48
     .equ ULSUM,         -56
-    .equ FRAME_SIZE,    64
+    .equ MAIN_STACK_BYTECOUNT,    64
 
     .equ MAX_DIGITS, 32768
 
 /*
     long BigInt_larger(long lLength1, long lLength2)
 */
+    .global BigInt_larger
 BigInt_larger:
     cmp x0, x1
     bgt first_larger
@@ -32,11 +31,13 @@ first_larger:
 /*
  int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
 */
+    .global BigInt_add
 BigInt_add:
 
-    /* PROLOGUE */
-    sub     sp, sp, FRAME_SIZE
-    stp     x29, x30, [sp]
+    /* Prolog */
+    sub     sp, sp, MAIN_STACK_BYTECOUNT
+    str     x29, [sp]
+    str     x30, [sp, 8]
     add     x29, sp, 0
 
     /* Spill parameters to stack */
@@ -172,6 +173,7 @@ overflow:
     mov     x0, 0
 
 done:
-    ldp     x29, x30, [sp]
-    add     sp, sp, FRAME_SIZE
+    ldr     x29, [sp]
+    ldr     x30, [sp, 8]
+    add     sp, sp, MAIN_STACK_BYTECOUNT
     ret
