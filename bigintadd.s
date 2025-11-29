@@ -7,21 +7,22 @@
     .equ LLENGTH,   0
     .equ AULDIGITS, 8
 
-/* Stack frame layout (all params + locals stored on the stack) */
-    .equ OADDEND1,     -48
-    .equ OADDEND2,     -40
-    .equ OSUM,         -32
+/* Stack layout (FRAME_SIZE = 80) */
 
-    .equ LSUMLENGTH,   -24
-    .equ LINDEX,       -16
     .equ ULCARRY,       -8
-    .equ ULSUM,        -56      /* must be below adds, but fits in frame */
+    .equ LINDEX,        -16
+    .equ LSUMLENGTH,    -24
+    .equ OSUM,          -32
+    .equ OADDEND2,      -40
+    .equ OADDEND1,      -48
 
-    .equ FRAME_SIZE,    64
-    .equ MAX_DIGITS, 32768
+    .equ ULSUM,         -64      /* safe 8-byte local for partial sum */
+    .equ FRAME_SIZE,     80
+
+    .equ MAX_DIGITS,  32768
 
 /*********************************************************************
- * int BigInt_larger(ulA, ulB)
+ * BigInt_larger
  *********************************************************************/
 BigInt_larger:
     cmp x0, x1
@@ -32,7 +33,7 @@ BigInt_larger:
     ret
 
 /*********************************************************************
- * int BigInt_add(addend1, addend2, sum)
+ * BigInt_add(addend1, addend2, sum)
  *********************************************************************/
 BigInt_add:
 
@@ -41,36 +42,32 @@ BigInt_add:
     stp     x29, x30, [sp]
     add     x29, sp, 0
 
-    /* Save arguments x0, x1, x2 into stack slots */
+    /* Save parameters into frame */
     str     x0, [x29, OADDEND1]
     str     x1, [x29, OADDEND2]
     str     x2, [x29, OSUM]
 
-    /* Compute max length = BigInt_larger(addend1->len, addend2->len) */
-
-    /* x0 = addend1->length */
+    /* Compute max length = BigInt_larger(a1->len, a2->len) */
     ldr     x3, [x29, OADDEND1]
     ldr     x0, [x3, LLENGTH]
 
-    /* x1 = addend2->length */
     ldr     x4, [x29, OADDEND2]
     ldr     x1, [x4, LLENGTH]
 
-    bl      BigInt_larger         /* returns larger length in x0 */
+    bl      BigInt_larger
     str     x0, [x29, LSUMLENGTH]
 
-    /* Zero sum digits if needed */
+    /* If sum->length < needed length, zero sum digits */
     ldr     x5, [x29, OSUM]
-    ldr     x6, [x5, LLENGTH]     /* old length */
-    ldr     x7, [x29, LSUMLENGTH] /* new length */
+    ldr     x6, [x5, LLENGTH]
+    ldr     x7, [x29, LSUMLENGTH]
 
     cmp     x6, x7
-    ble     2f                    /* skip memset if old >= new */
+    ble     2f
 
-    /* memset(sum->aDigits, 0, newLength * 8) */
-    add     x0, x5, AULDIGITS     /* pointer to digits */
-    mov     x1, 0                 /* fill byte */
-    lsl     x2, x7, 3             /* bytes = length * 8 */
+    add     x0, x5, AULDIGITS    /* x0 = sum->digits */
+    mov     x1, 0
+    lsl     x2, x7, 3            /* bytes = newLength * 8 */
     bl      memset
 
 2:
@@ -79,12 +76,12 @@ BigInt_add:
     str     x0, [x29, ULCARRY]
     str     x0, [x29, LINDEX]
 
-/* LOOP: for(i=0; i<maxLength; i++) */
+/* LOOP: for(i < LSUMLENGTH) */
 3:
     ldr     x1, [x29, LINDEX]
     ldr     x2, [x29, LSUMLENGTH]
     cmp     x1, x2
-    bge     4f                    /* exit loop */
+    bge     4f
 
     /* ULSUM = carry; carry = 0 */
     ldr     x3, [x29, ULCARRY]
@@ -92,12 +89,12 @@ BigInt_add:
     mov     x3, 0
     str     x3, [x29, ULCARRY]
 
-    /* ---- Add addend1 digit ---- */
+    /* ---- Add digit from addend1 ---- */
     ldr     x4, [x29, OADDEND1]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
     add     x4, x4, x5
-    ldr     x6, [x4]              /* digit */
+    ldr     x6, [x4]
 
     ldr     x7, [x29, ULSUM]
     add     x7, x7, x6
@@ -109,7 +106,7 @@ BigInt_add:
     str     x8, [x29, ULCARRY]
 5:
 
-    /* ---- Add addend2 digit ---- */
+    /* ---- Add digit from addend2 ---- */
     ldr     x4, [x29, OADDEND2]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -126,7 +123,7 @@ BigInt_add:
     str     x8, [x29, ULCARRY]
 6:
 
-    /* store result digit in sum */
+    /* store result digit */
     ldr     x4, [x29, OSUM]
     lsl     x5, x1, 3
     add     x4, x4, AULDIGITS
@@ -140,6 +137,7 @@ BigInt_add:
     str     x1, [x29, LINDEX]
     b       3b
 
+/* END LOOP */
 4:
     /* Final carry */
     ldr     x0, [x29, ULCARRY]
@@ -162,7 +160,7 @@ BigInt_add:
     str     x1, [x29, LSUMLENGTH]
 
 7:
-    /* Write new length to sum->ulLength */
+    /* Store ulLength */
     ldr     x2, [x29, OSUM]
     ldr     x1, [x29, LSUMLENGTH]
     str     x1, [x2, LLENGTH]
