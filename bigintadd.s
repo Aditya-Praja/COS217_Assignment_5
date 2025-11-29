@@ -25,9 +25,9 @@ first_larger:
     ret
 
 BigInt_add:
-    sub sp, sp, 48
-    str x30, [sp]
-    str x29, [sp, 8]
+    sub sp, sp, 64
+    str x29, [sp]
+    str x30, [sp, 8]
     add x29, sp, 0
 
     ldr x0, [x29, OADDEND1]
@@ -43,12 +43,12 @@ BigInt_add:
     ble skip_memset
     add x0, x3, AULDIGITS
     mov x1, 0
-    mov x2, MAX_BYTES    
+    ldr x2, [x29, LSUMLENGTH]   
+    lsl x2, x2, 3
     bl memset
 skip_memset:
     mov x0, 0
     str x0, [x29, ULCARRY]
-    mov x0, 0
     str x0, [x29, LINDEX]
 loop_start:
     ldr x1, [x29,LINDEX]
@@ -130,7 +130,7 @@ no_carry:
 max_digits_surpassed:
     mov x0, 0
 finish: 
-    ldr x30, [sp]
+    ldr x29, [sp]
     ldr x29, [sp, 8]
-    add sp, sp, 48
+    add sp, sp, 64
     ret
