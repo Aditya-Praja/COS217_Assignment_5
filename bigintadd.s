@@ -41,7 +41,7 @@ BigInt_add:
     ldr x5, [x29, LSUMLENGTH]
     cmp x4, x5
     ble skip_memset
-    add x0, x3, ADIGITS
+    add x0, x3, AULDIGITS
     mov x1, 0
     mov x2, MAX_BYTES    
     bl memset
@@ -93,7 +93,7 @@ no_overflow2:
     ldr x4, [x29, OSUM]
     ldr x5, [x29, LINDEX]
     lsl x5, x5, 3     
-    add x4, x4, ADIGITS        
+    add x4, x4, AULDIGITS        
     add x4, x4, x5 
     ldr x7, [x29, ULSUM]
     str x7, [x4]
@@ -114,7 +114,7 @@ loop_end:
     ldr x2, [x29, OSUM]
     ldr x1, [x29, LSUMLENGTH]
     lsl x1, x1, 3
-    add x2, x2, ADIGITS       
+    add x2, x2, AULDIGITS       
     add x2, x2, x1
     mov x3, 1
     str x3, [x2]
@@ -125,10 +125,10 @@ no_carry:
     ldr x2, [x29, OSUM]
     ldr x1, [x29, LSUMLENGTH]
     str x1, [x2, LLENGTH]
-    mov x0, TRUE
+    mov x0, 1
     b finish
 max_digits_surpassed:
-    move x0, 0
+     x0, 0
 finish: 
     ldr x30, [sp]
     ldr x29, [sp, 8]
