@@ -26,8 +26,7 @@ first_larger:
 
 BigInt_add:
     sub sp, sp, 64
-    str x29, [sp]
-    str x30, [sp, 8]
+    stp x29, x30, [sp]
     add x29, sp, 0
 
     ldr x0, [x29, OADDEND1]
@@ -130,7 +129,6 @@ no_carry:
 max_digits_surpassed:
     mov x0, 0
 finish: 
-    ldr x29, [sp]
-    ldr x30, [sp, 8]
+    ldp x29, x30, [sp]
     add sp, sp, 64
     ret
