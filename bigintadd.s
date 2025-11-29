@@ -131,6 +131,6 @@ max_digits_surpassed:
     mov x0, 0
 finish: 
     ldr x29, [sp]
-    ldr x29, [sp, 8]
+    ldr x30, [sp, 8]
     add sp, sp, 64
     ret
