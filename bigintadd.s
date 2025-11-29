@@ -34,7 +34,7 @@ BigInt_larger:
  *********************************************************************/
 BigInt_add:
     /* PROLOGUE (COS 217 slide style) */
-    sub  sp, sp, 48
+    sub  sp, sp, 64
     str  x29, [sp]        /* save FP */
     str  x30, [sp, 8]     /* save LR */
     add  x29, sp, 0       /* FP = SP */
@@ -178,5 +178,5 @@ BigInt_add:
     /* EPILOGUE */
     ldr x29, [sp]
     ldr x30, [sp, 8]
-    add sp, sp, 48
+    add sp, sp, 64
     ret
