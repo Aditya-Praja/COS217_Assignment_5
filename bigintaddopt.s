@@ -8,7 +8,7 @@
     .equ MAX_DIGITS, 32768
 
 // Stack frame 
-    OADDENT1 .req x19
+    OADDEND1 .req x19
     OADDEND2 .req x20     
     OSUM .req x21 
     LSUMLENGTH .req x22     
