@@ -35,9 +35,19 @@ first_larger:
 BigInt_add:
 
     // prolog 
-    sub sp, sp, 16
+    sub sp, sp, 96
     str x29, [sp]
     str x30, [sp, 8]
+    str x19, [sp, 16]
+    str x20, [sp, 24]
+    str x21, [sp, 32]
+    str x22, [sp, 40]
+    str x23, [sp, 48]
+    str x24, [sp, 56]
+    str x25, [sp, 64]
+    str x26, [sp, 72]
+    str x27, [sp, 80]
+    str x28, [sp, 88]
     add x29, sp, 0
 
     // putting the parameters into the stack 
@@ -140,5 +150,15 @@ finish:
     // epilog
     ldr x29, [sp]
     ldr x30, [sp, 8]
-    add sp, sp, 16
+    ldr x19, [sp, 16]
+    ldr x20, [sp, 24]
+    ldr x21, [sp, 32]
+    ldr x22, [sp, 40]
+    ldr x23, [sp, 48]
+    ldr x24, [sp, 56]
+    ldr x25, [sp, 64]
+    ldr x26, [sp, 72]
+    ldr x27, [sp, 80]
+    ldr x28, [sp, 88]
+    add sp, sp, 96
     ret
