@@ -51,7 +51,7 @@ BigInt_add:
     mov LSUMLENGTH, x0
 
     // clear array if necessary, conditonal first 
-    ldr TMP1 [OSUM, LLENGTH]
+    ldr TMP1, [OSUM, LLENGTH]
     cmp TMP1, LSUMLENGTH
     ble no_clear
 
@@ -97,7 +97,7 @@ no_over1:
 
     add ULSUM, ULSUM, TMP3
     cmp ULSUM, TMP3
-    bhs no_over1
+    bhs no_over2
     mov ULCARRY, 1
 no_over2:
 
@@ -114,7 +114,8 @@ endloop:
     cmp ULCARRY, 1
     bne store_length
 
-    cmp LSUMLENGTH, MAX_DIGITS
+    mov TMP3, MAX_DIGITS
+    cmp LSUMLENGTH, TMP3
     beq return_false
 
     lsl TMP1, LSUMLENGTH, 3
@@ -138,5 +139,5 @@ finish:
     // epilog
     ldr x29, [sp]
     ldr x30, [sp, 8]
-    add sp, sp, MAIN_STACK_BYTECOUNT
+    add sp, sp, 16
     ret
