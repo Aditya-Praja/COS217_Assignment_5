@@ -5,6 +5,7 @@
     .equ AULDIGITS, 8
     .equ TRUE, 1
     .equ FALSE, 0
+    .equ MAX_DIGITS, 32768
 
 // Stack frame 
     OADDENT1 .req x19
@@ -66,7 +67,7 @@ no_clear:
 
     // ulCarry = 0 and lIndex = 0 
     mov ULCARRY, 0
-    mov LINDEX,0
+    mov LINDEX, 0
 
 // for loop lIndex < lSumLength 
 loop:
