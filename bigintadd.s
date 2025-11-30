@@ -1,18 +1,20 @@
     .section .text
 
 // BigInt struct field offsets
-    .equ LLENGTH,   0
+    .equ LLENGTH, 0
     .equ AULDIGITS, 8
+    .equ TRUE, 1
+    .equ FALSE, 0
 
 // Stack frame 
-    .equ ULCARRY,       -8
-    .equ LINDEX,        -16
-    .equ LSUMLENGTH,    -24
-    .equ OSUM,          -32
-    .equ OADDEND2,      -40
-    .equ OADDEND1,      -48
-    .equ ULSUM,         -56
-    .equ MAIN_STACK_BYTECOUNT,    64
+    .equ ULCARRY, -8
+    .equ LINDEX, -16
+    .equ LSUMLENGTH, -24
+    .equ OSUM, -32
+    .equ OADDEND2, -40
+    .equ OADDEND1, -48
+    .equ ULSUM, -56
+    .equ MAIN_STACK_BYTECOUNT, 64
 
     .equ MAX_DIGITS, 32768
 
@@ -32,144 +34,144 @@ first_larger:
 BigInt_add:
 
     // prolog 
-    sub     sp, sp, MAIN_STACK_BYTECOUNT
-    str     x29, [sp]
-    str     x30, [sp, 8]
-    add     x29, sp, 0
+    sub sp, sp, MAIN_STACK_BYTECOUNT
+    str x29, [sp]
+    str x30, [sp, 8]
+    add x29, sp, 0
 
     // putting the parameters into the stack 
-    str     x0, [x29, OADDEND1]
-    str     x1, [x29, OADDEND2]
-    str     x2, [x29, OSUM]
+    str x0, [x29, OADDEND1]
+    str x1, [x29, OADDEND2]
+    str x2, [x29, OSUM]
 
     // lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength)
-    ldr     x3, [x29, OADDEND1]
-    ldr     x0, [x3, LLENGTH]
-    ldr     x4, [x29, OADDEND2]
-    ldr     x1, [x4, LLENGTH]
+    ldr x3, [x29, OADDEND1]
+    ldr x0, [x3, LLENGTH]
+    ldr x4, [x29, OADDEND2]
+    ldr x1, [x4, LLENGTH]
 
-    bl      BigInt_larger
-    str     x0, [x29, LSUMLENGTH]
+    bl  BigInt_larger
+    str x0, [x29, LSUMLENGTH]
 
     // clear array if necessary, conditonal first 
-    ldr     x5, [x29, OSUM]
-    ldr     x6, [x5, LLENGTH]      // old length 
-    ldr     x7, [x29, LSUMLENGTH]  // new needed length 
-    cmp     x6, x7
-    ble     no_clear
+    ldr x5, [x29, OSUM]
+    ldr x6, [x5, LLENGTH]      // old length 
+    ldr x7, [x29, LSUMLENGTH]  // new needed length 
+    cmp x6, x7
+    ble no_clear
 
     // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
-    add     x0, x5, AULDIGITS      // pointer to aulDigits 
-    mov     x1, 0
-    mov     x2, MAX_DIGITS
-    lsl     x2, x2, 3              // MAX_DIGITS * 8
-    bl      memset
+    add x0, x5, AULDIGITS      // pointer to aulDigits 
+    mov x1, 0
+    mov x2, MAX_DIGITS
+    lsl x2, x2, 3              // MAX_DIGITS * 8
+    bl memset
 
 no_clear:
 
     // ulCarry = 0 and lIndex = 0 
-    mov     x0, 0
-    str     x0, [x29, ULCARRY]
-    str     x0, [x29, LINDEX]
+    mov x0, 0
+    str x0, [x29, ULCARRY]
+    str x0, [x29, LINDEX]
 
 // for loop lIndex < lSumLength 
 loop:
-    ldr     x1, [x29, LINDEX]
-    ldr     x2, [x29, LSUMLENGTH]
-    cmp     x1, x2
-    bge     endloop
+    ldr x1, [x29, LINDEX]
+    ldr x2, [x29, LSUMLENGTH]
+    cmp x1, x2
+    bge endloop
 
     // ulSum = ulCarry; ulCarry = 0 
-    ldr     x3, [x29, ULCARRY]
-    str     x3, [x29, ULSUM]
-    mov     x3, 0
-    str     x3, [x29, ULCARRY]
+    ldr x3, [x29, ULCARRY]
+    str x3, [x29, ULSUM]
+    mov x3, 0
+    str x3, [x29, ULCARRY]
 
     // Add digit from a1
-    ldr     x4, [x29, OADDEND1]
-    lsl     x5, x1, 3
-    add     x4, x4, AULDIGITS
-    add     x4, x4, x5
-    ldr     x6, [x4]
+    ldr x4, [x29, OADDEND1]
+    lsl x5, x1, 3
+    add x4, x4, AULDIGITS
+    add x4, x4, x5
+    ldr x6, [x4]
 
-    ldr     x7, [x29, ULSUM]
-    add     x7, x7, x6
-    str     x7, [x29, ULSUM]
+    ldr x7, [x29, ULSUM]
+    add x7, x7, x6
+    str x7, [x29, ULSUM]
 
-    cmp     x7, x6
-    bhs     no_over1
-    mov     x8, 1
-    str     x8, [x29, ULCARRY]
+    cmp x7, x6
+    bhs no_over1
+    mov x8, 1
+    str x8, [x29, ULCARRY]
 no_over1:
 
     // Add digit from a2
-    ldr     x4, [x29, OADDEND2]
-    lsl     x5, x1, 3
-    add     x4, x4, AULDIGITS
-    add     x4, x4, x5
-    ldr     x6, [x4]
+    ldr x4, [x29, OADDEND2]
+    lsl x5, x1, 3
+    add x4, x4, AULDIGITS
+    add x4, x4, x5
+    ldr x6, [x4]
 
-    ldr     x7, [x29, ULSUM]
-    add     x7, x7, x6
-    str     x7, [x29, ULSUM]
+    ldr x7, [x29, ULSUM]
+    add x7, x7, x6
+    str x7, [x29, ULSUM]
 
-    cmp     x7, x6
-    bhs     no_over2
-    mov     x8, 1
-    str     x8, [x29, ULCARRY]
+    cmp x7, x6
+    bhs no_over2
+    mov x8, 1
+    str x8, [x29, ULCARRY]
 no_over2:
 
     // storing in sum
-    ldr     x4, [x29, OSUM]
-    lsl     x5, x1, 3
-    add     x4, x4, AULDIGITS
-    add     x4, x4, x5
+    ldr x4, [x29, OSUM]
+    lsl x5, x1, 3
+    add x4, x4, AULDIGITS
+    add x4, x4, x5
 
-    ldr     x7, [x29, ULSUM]
-    str     x7, [x4]
+    ldr x7, [x29, ULSUM]
+    str x7, [x4]
 
     // lIndex++ 
-    add     x1, x1, 1
-    str     x1, [x29, LINDEX]
+    add x1, x1, 1
+    str x1, [x29, LINDEX]
 
-    b       loop
+    b loop
 
 endloop:
     // after loop
-    ldr     x0, [x29, ULCARRY]
-    cmp     x0, 1
-    bne     store_length
+    ldr x0, [x29, ULCARRY]
+    cmp x0, 1
+    bne store_length
 
-    ldr     x1, [x29, LSUMLENGTH]
-    cmp     x1, MAX_DIGITS
-    beq     overflow
+    ldr x1, [x29, LSUMLENGTH]
+    cmp x1, MAX_DIGITS
+    beq return_false
 
     // oSum->aulDigits[lSumLength] = 1 
-    ldr     x2, [x29, OSUM]
-    lsl     x3, x1, 3
-    add     x2, x2, AULDIGITS
-    add     x2, x2, x3
-    mov     x4, 1
-    str     x4, [x2]
+    ldr x2, [x29, OSUM]
+    lsl x3, x1, 3
+    add x2, x2, AULDIGITS
+    add x2, x2, x3
+    mov x4, 1
+    str x4, [x2]
 
-    add     x1, x1, 1
-    str     x1, [x29, LSUMLENGTH]
+    add x1, x1, 1
+    str x1, [x29, LSUMLENGTH]
 
 store_length:
     // oSum->lLength = lSumLength 
-    ldr     x2, [x29, OSUM]
-    ldr     x1, [x29, LSUMLENGTH]
-    str     x1, [x2, LLENGTH]
+    ldr x2, [x29, OSUM]
+    ldr x1, [x29, LSUMLENGTH]
+    str x1, [x2, LLENGTH]
 
-    mov     x0, 1
-    b       done
+    mov x0, TRUE
+    b finish
 
-overflow:
-    mov     x0, 0
+return_false:
+    mov x0, FALSE
 
-done:
+finish:
     // epilog
-    ldr     x29, [sp]
-    ldr     x30, [sp, 8]
-    add     sp, sp, MAIN_STACK_BYTECOUNT
+    ldr x29, [sp]
+    ldr x30, [sp, 8]
+    add sp, sp, MAIN_STACK_BYTECOUNT
     ret
