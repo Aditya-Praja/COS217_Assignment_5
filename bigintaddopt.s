@@ -1,23 +1,24 @@
     .section .text
 
 // BigInt struct field offsets
-    .equ LLENGTH, 0
-    .equ AULDIGITS, 8
+    .equ LLENGTH, 0 // long 
+    .equ AULDIGITS, 8 // unsigned long []
+
+// Stored information 
+    OADDEND1 .req x19 // BigInt_T
+    OADDEND2 .req x20     // BigInt_T
+    OSUM .req x21  // BigInt_T
+    LSUMLENGTH .req x22     // long 
+    LINDEX .req x23     // long 
+    ULCARRY .req x24    // unsigned long 
+    ULSUM .req x25    // unsigned long
+    TEMP1 .req x26
+    TEMP2 .req x27
+    TEMP3 .req x28
+
     .equ TRUE, 1
     .equ FALSE, 0
     .equ MAX_DIGITS, 32768
-
-// Stack frame 
-    OADDEND1 .req x19
-    OADDEND2 .req x20     
-    OSUM .req x21 
-    LSUMLENGTH .req x22     
-    LINDEX .req x23     
-    ULCARRY .req x24     
-    ULSUM .req x25    
-    TMP1 .req x26
-    TMP2 .req x27
-    TMP3 .req x28
 
 // long BigInt_larger(long lLength1, long lLength2)
 
@@ -62,8 +63,8 @@ BigInt_add:
     mov LSUMLENGTH, x0
 
     // clear array if necessary, conditonal first 
-    ldr TMP1, [OSUM, LLENGTH]
-    cmp TMP1, LSUMLENGTH
+    ldr TEMP1, [OSUM, LLENGTH]
+    cmp TEMP1, LSUMLENGTH
     ble no_clear
 
     // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
@@ -89,33 +90,33 @@ loop:
     mov ULCARRY, 0
 
     // Add digit from a1
-    lsl TMP1, LINDEX, 3
-    add TMP2, OADDEND1, AULDIGITS
-    add TMP2, TMP2, TMP1
-    ldr TMP3, [TMP2]
+    lsl TEMP1, LINDEX, 3
+    add TEMP2, OADDEND1, AULDIGITS
+    add TEMP2, TEMP2, TEMP1
+    ldr TEMP3, [TEMP2]
 
-    add ULSUM, ULSUM, TMP3
-    cmp ULSUM, TMP3
+    add ULSUM, ULSUM, TEMP3
+    cmp ULSUM, TEMP3
     bhs no_over1
     mov ULCARRY, 1
 
 no_over1:
 
     // Add digit from a2
-    add TMP2, OADDEND2, AULDIGITS
-    add TMP2, TMP2, TMP1
-    ldr TMP3, [TMP2]
+    add TEMP2, OADDEND2, AULDIGITS
+    add TEMP2, TEMP2, TEMP1
+    ldr TEMP3, [TEMP2]
 
-    add ULSUM, ULSUM, TMP3
-    cmp ULSUM, TMP3
+    add ULSUM, ULSUM, TEMP3
+    cmp ULSUM, TEMP3
     bhs no_over2
     mov ULCARRY, 1
 no_over2:
 
     // storing in sum
-    add TMP2, OSUM, AULDIGITS
-    add TMP2, TMP2, TMP1
-    str ULSUM, [TMP2]
+    add TEMP2, OSUM, AULDIGITS
+    add TEMP2, TEMP2, TEMP1
+    str ULSUM, [TEMP2]
     add LINDEX, LINDEX, 1
 
     b loop
@@ -125,15 +126,15 @@ endloop:
     cmp ULCARRY, 1
     bne store_length
 
-    mov TMP3, MAX_DIGITS
-    cmp LSUMLENGTH, TMP3
+    mov TEMP3, MAX_DIGITS
+    cmp LSUMLENGTH, TEMP3
     beq return_false
 
-    lsl TMP1, LSUMLENGTH, 3
-    add TMP2, OSUM, AULDIGITS
-    add TMP2, TMP2, TMP1
-    mov TMP3, 1
-    str TMP3, [TMP2]
+    lsl TEMP1, LSUMLENGTH, 3
+    add TEMP2, OSUM, AULDIGITS
+    add TEMP2, TEMP2, TEMP1
+    mov TEMP3, 1
+    str TEMP3, [TEMP2]
     add LSUMLENGTH, LSUMLENGTH, 1
 
 store_length:
