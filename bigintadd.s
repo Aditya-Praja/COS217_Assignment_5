@@ -1,21 +1,21 @@
     .section .text
 
 // BigInt struct field offsets
-    .equ LLENGTH, 0
-    .equ AULDIGITS, 8
-    .equ TRUE, 1
-    .equ FALSE, 0
+    .equ LLENGTH, 0 // long 
+    .equ AULDIGITS, 8 // unsigned long []
 
 // Stack frame 
-    .equ ULCARRY, -8
-    .equ LINDEX, -16
-    .equ LSUMLENGTH, -24
-    .equ OSUM, -32
-    .equ OADDEND2, -40
-    .equ OADDEND1, -48
-    .equ ULSUM, -56
-    .equ MAIN_STACK_BYTECOUNT, 64
+    .equ ULCARRY, -8 // unsigned long
+    .equ LINDEX, -16 // long
+    .equ LSUMLENGTH, -24 // long
+    .equ OSUM, -32 // BigInt_T
+    .equ OADDEND2, -40 BigInt_T
+    .equ OADDEND1, -48 BigInt_T
+    .equ ULSUM, -56 // unsigned long 
 
+    .equ MAIN_STACK_BYTECOUNT, 64
+    .equ TRUE, 1
+    .equ FALSE, 0
     .equ MAX_DIGITS, 32768
 
 // long BigInt_larger(long lLength1, long lLength2)
@@ -46,8 +46,8 @@ BigInt_add:
 
     // lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength)
     ldr x3, [x29, OADDEND1]
-    ldr x0, [x3, LLENGTH]
     ldr x4, [x29, OADDEND2]
+    ldr x0, [x3, LLENGTH]
     ldr x1, [x4, LLENGTH]
 
     bl  BigInt_larger
