@@ -12,9 +12,6 @@
     LINDEX .req x23     // long 
     ULCARRY .req x24    // unsigned long 
     ULSUM .req x25    // unsigned long
-    TEMP1 .req x26
-    TEMP2 .req x27
-    TEMP3 .req x28
 
     .equ TRUE, 1
     .equ FALSE, 0
@@ -63,9 +60,9 @@ BigInt_add:
     mov LSUMLENGTH, x0
 
     // clear array if necessary, conditonal first 
-    ldr TEMP1, [OSUM, LLENGTH]
-    cmp TEMP1, LSUMLENGTH
-    ble no_clear
+    ldr x8, [OSUM, LLENGTH]
+    cmp x8, LSUMLENGTH
+    ble not_cleared
 
     // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
     add x0, OSUM, AULDIGITS      // pointer to aulDigits 
@@ -74,7 +71,7 @@ BigInt_add:
     lsl x2, x2, 3              // MAX_DIGITS * 8
     bl memset
 
-no_clear:
+not_cleared:
 
     // ulCarry = 0 and lIndex = 0 
     mov ULCARRY, 0
@@ -90,33 +87,33 @@ loop:
     mov ULCARRY, 0
 
     // Add digit from a1
-    lsl TEMP1, LINDEX, 3
-    add TEMP2, OADDEND1, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    ldr TEMP3, [TEMP2]
+    lsl x8, LINDEX, 3
+    add x9, OADDEND1, AULDIGITS
+    add x9, x9, x8
+    ldr x10, [x9]
 
-    add ULSUM, ULSUM, TEMP3
-    cmp ULSUM, TEMP3
-    bhs no_over1
+    add ULSUM, ULSUM, x10
+    cmp ULSUM, x10
+    bhs no_overflow1
     mov ULCARRY, 1
 
-no_over1:
+no_overflow1:
 
     // Add digit from a2
-    add TEMP2, OADDEND2, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    ldr TEMP3, [TEMP2]
+    add x9, OADDEND2, AULDIGITS
+    add x9, x9, x8
+    ldr x10, [x9]
 
-    add ULSUM, ULSUM, TEMP3
-    cmp ULSUM, TEMP3
-    bhs no_over2
+    add ULSUM, ULSUM, x10
+    cmp ULSUM, x10
+    bhs no_overflow2
     mov ULCARRY, 1
-no_over2:
+no_overflow2:
 
     // storing in sum
-    add TEMP2, OSUM, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    str ULSUM, [TEMP2]
+    add x9, OSUM, AULDIGITS
+    add x9, x9, x8
+    str ULSUM, [x9]
     add LINDEX, LINDEX, 1
 
     b loop
@@ -126,15 +123,15 @@ endloop:
     cmp ULCARRY, 1
     bne store_length
 
-    mov TEMP3, MAX_DIGITS
-    cmp LSUMLENGTH, TEMP3
+    mov x10, MAX_DIGITS
+    cmp LSUMLENGTH, x10
     beq return_false
 
-    lsl TEMP1, LSUMLENGTH, 3
-    add TEMP2, OSUM, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    mov TEMP3, 1
-    str TEMP3, [TEMP2]
+    lsl x8, LSUMLENGTH, 3
+    add x9, OSUM, AULDIGITS
+    add x9, x9, x8
+    mov x10, 1
+    str x10, [x9]
     add LSUMLENGTH, LSUMLENGTH, 1
 
 store_length:

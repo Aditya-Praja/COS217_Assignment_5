@@ -26,6 +26,7 @@ BigInt_larger:
     bgt first_larger
     mov x0, x1
     ret
+
 first_larger:
     ret
 
@@ -49,7 +50,6 @@ BigInt_add:
     ldr x4, [x29, OADDEND2]
     ldr x0, [x3, LLENGTH]
     ldr x1, [x4, LLENGTH]
-
     bl  BigInt_larger
     str x0, [x29, LSUMLENGTH]
 
@@ -58,16 +58,16 @@ BigInt_add:
     ldr x6, [x5, LLENGTH]      // old length 
     ldr x7, [x29, LSUMLENGTH]  // new needed length 
     cmp x6, x7
-    ble no_clear
+    ble not_cleared
 
     // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
-    add x0, x5, AULDIGITS      // pointer to aulDigits 
+    add x0, x5, AULDIGITS      // pointer to aulDigits with offset
     mov x1, 0
     mov x2, MAX_DIGITS
     lsl x2, x2, 3              // MAX_DIGITS * 8
     bl memset
 
-no_clear:
+not_cleared:
 
     // ulCarry = 0 and lIndex = 0 
     mov x0, 0
@@ -93,16 +93,15 @@ loop:
     add x4, x4, AULDIGITS
     add x4, x4, x5
     ldr x6, [x4]
-
     ldr x7, [x29, ULSUM]
     add x7, x7, x6
     str x7, [x29, ULSUM]
-
     cmp x7, x6
-    bhs no_over1
+    bhs no_overflow1
     mov x8, 1
     str x8, [x29, ULCARRY]
-no_over1:
+
+no_overflow1:
 
     // Add digit from a2
     ldr x4, [x29, OADDEND2]
@@ -110,30 +109,27 @@ no_over1:
     add x4, x4, AULDIGITS
     add x4, x4, x5
     ldr x6, [x4]
-
     ldr x7, [x29, ULSUM]
     add x7, x7, x6
     str x7, [x29, ULSUM]
-
     cmp x7, x6
-    bhs no_over2
+    bhs no_overflow2
     mov x8, 1
     str x8, [x29, ULCARRY]
-no_over2:
+
+no_overflow2:
 
     // storing in sum
     ldr x4, [x29, OSUM]
     lsl x5, x1, 3
     add x4, x4, AULDIGITS
     add x4, x4, x5
-
     ldr x7, [x29, ULSUM]
     str x7, [x4]
 
     // lIndex++ 
     add x1, x1, 1
     str x1, [x29, LINDEX]
-
     b loop
 
 endloop:
