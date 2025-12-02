@@ -9,8 +9,8 @@
     .equ LINDEX, -16 // long
     .equ LSUMLENGTH, -24 // long
     .equ OSUM, -32 // BigInt_T
-    .equ OADDEND2, -40 BigInt_T
-    .equ OADDEND1, -48 BigInt_T
+    .equ OADDEND2, -40 // BigInt_T
+    .equ OADDEND1, -48 // BigInt_T
     .equ ULSUM, -56 // unsigned long 
 
     .equ MAIN_STACK_BYTECOUNT, 64
