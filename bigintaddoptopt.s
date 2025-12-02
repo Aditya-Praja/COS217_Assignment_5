@@ -11,9 +11,6 @@
     LSUMLENGTH .req x22     // long 
     LINDEX .req x23     // long 
     ULSUM .req x25    // unsigned long
-    TEMP1 .req x26
-    TEMP2 .req x27
-    TEMP3 .req x28
     OFFSET .req x8
 
     .equ TRUE, 1
@@ -57,8 +54,8 @@ second_larger:
 
 after_larger:
     // clear array if necessary, conditonal first 
-    ldr TEMP1, [OSUM, LLENGTH]
-    cmp TEMP1, LSUMLENGTH
+    ldr x9, [OSUM, LLENGTH]
+    cmp x9, LSUMLENGTH
     ble no_clear
 
     // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
@@ -75,28 +72,28 @@ no_clear:
     adds xzr, xzr, xzr  // clear carry flag
 
 loop:
-    sub TEMP1, LSUMLENGTH, LINDEX
-    cbz TEMP1, endloop
+    sub x9, LSUMLENGTH, LINDEX
+    cbz x9, endloop
 
     lsl OFFSET, LINDEX, 3 
 
     // add a1 digits
-    add TEMP3, OADDEND1, AULDIGITS
-    add TEMP3, TEMP3, OFFSET
-    ldr TEMP3, [TEMP3]
+    add x11, OADDEND1, AULDIGITS
+    add x11, x11, OFFSET
+    ldr x11, [x11]
     
     // add a2 digits
-    add TEMP2, OADDEND2, AULDIGITS
-    add TEMP2, TEMP2, OFFSET
-    ldr TEMP2, [TEMP2]
+    add x10, OADDEND2, AULDIGITS
+    add x10, x10, OFFSET
+    ldr x10, [x10]
 
     // add with carry
-    adcs ULSUM, TEMP3, TEMP2
+    adcs ULSUM, x11, x10
 
     // storing in sum
-    add TEMP1, OSUM, AULDIGITS
-    add TEMP1, TEMP1, OFFSET
-    str ULSUM, [TEMP1]
+    add x9, OSUM, AULDIGITS
+    add x9, x9, OFFSET
+    str ULSUM, [x9]
     add LINDEX, LINDEX, 1
     b loop
 
@@ -104,15 +101,15 @@ endloop:
     // after loop
     bcc store_length
 
-    mov TEMP3, MAX_DIGITS
-    cmp LSUMLENGTH, TEMP3
+    mov x11, MAX_DIGITS
+    cmp LSUMLENGTH, x11
     beq return_false
 
-    lsl TEMP1, LSUMLENGTH, 3
-    add TEMP2, OSUM, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    mov TEMP3, 1
-    str TEMP3, [TEMP2]
+    lsl x9, LSUMLENGTH, 3
+    add x10, OSUM, AULDIGITS
+    add x10, x10, x9
+    mov x11, 1
+    str x11, [x10]
     add LSUMLENGTH, LSUMLENGTH, 1
 
 store_length:
