@@ -10,7 +10,6 @@
     OSUM .req x21  // BigInt_T
     LSUMLENGTH .req x22     // long 
     LINDEX .req x23     // long 
-    ULCARRY .req x24    // unsigned long 
     ULSUM .req x25    // unsigned long
     TEMP1 .req x26
     TEMP2 .req x27
@@ -33,11 +32,10 @@ BigInt_add:
     str x21, [sp, 32]
     str x22, [sp, 40]
     str x23, [sp, 48]
-    str x24, [sp, 56]
-    str x25, [sp, 64]
-    str x26, [sp, 72]
-    str x27, [sp, 80]
-    str x28, [sp, 88]
+    str x25, [sp, 56]
+    str x26, [sp, 64]
+    str x27, [sp, 72]
+    str x28, [sp, 80]
     add x29, sp, 0
 
     // putting the parameters into the stack 
@@ -71,42 +69,24 @@ after_larger:
 
 no_clear:
 
-    // ulCarry = 0 and lIndex = 0 
-    mov ULCARRY, 0
+    // lIndex = 0 
     mov LINDEX, 0
-    
-cbz LSUMLENGTH, endloop
+    adds xzr, xzr, 0
+    cbz LSUMLENGTH, endloop
 
-// for loop lIndex < lSumLength 
 loop:
-
-    // ulSum = ulCarry; ulCarry = 0 
-    mov ULSUM, ULCARRY
-    mov ULCARRY, 0
-
     // Add digit from a1
     lsl TEMP1, LINDEX, 3
     add TEMP2, OADDEND1, AULDIGITS
     add TEMP2, TEMP2, TEMP1
     ldr TEMP3, [TEMP2]
 
-    add ULSUM, ULSUM, TEMP3
-    cmp ULSUM, TEMP3
-    bhs no_over1
-    mov ULCARRY, 1
-
-no_over1:
-
-    // Add digit from a2
+    // add digit from a2
     add TEMP2, OADDEND2, AULDIGITS
     add TEMP2, TEMP2, TEMP1
-    ldr TEMP3, [TEMP2]
+    ldr TEMP2, [TEMP2]
 
-    add ULSUM, ULSUM, TEMP3
-    cmp ULSUM, TEMP3
-    bhs no_over2
-    mov ULCARRY, 1
-no_over2:
+    adcs ULSUM, TEMP3, TEMP2
 
     // storing in sum
     add TEMP2, OSUM, AULDIGITS
@@ -118,8 +98,7 @@ no_over2:
 
 endloop:
     // after loop
-    cmp ULCARRY, 1
-    bne store_length
+    bcc store_length
 
     mov TEMP3, MAX_DIGITS
     cmp LSUMLENGTH, TEMP3
@@ -151,10 +130,9 @@ finish:
     ldr x21, [sp, 32]
     ldr x22, [sp, 40]
     ldr x23, [sp, 48]
-    ldr x24, [sp, 56]
-    ldr x25, [sp, 64]
-    ldr x26, [sp, 72]
-    ldr x27, [sp, 80]
-    ldr x28, [sp, 88]
+    ldr x25, [sp, 56]
+    ldr x26, [sp, 64]
+    ldr x27, [sp, 72]
+    ldr x28, [sp, 80]
     add sp, sp, 96
     ret
