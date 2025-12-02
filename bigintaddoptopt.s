@@ -14,6 +14,7 @@
     TEMP1 .req x26
     TEMP2 .req x27
     TEMP3 .req x28
+    OFFSET .req x8
 
     .equ TRUE, 1
     .equ FALSE, 0
@@ -77,16 +78,16 @@ loop:
     sub TEMP1, LSUMLENGTH, LINDEX
     cbz TEMP1, endloop
 
-    lsl x9, LINDEX, 3 
+    lsl OFFSET, LINDEX, 3 
 
     // add a1 digits
     add TEMP3, OADDEND1, AULDIGITS
-    add TEMP3, TEMP3, x9
+    add TEMP3, TEMP3, OFFSET
     ldr TEMP3, [TEMP3]
     
     // add a2 digits
     add TEMP2, OADDEND2, AULDIGITS
-    add TEMP2, TEMP2, x9
+    add TEMP2, TEMP2, OFFSET
     ldr TEMP2, [TEMP2]
 
     // add with carry
@@ -94,7 +95,7 @@ loop:
 
     // storing in sum
     add TEMP1, OSUM, AULDIGITS
-    add TEMP1, TEMP1, x9
+    add TEMP1, TEMP1, OFFSET
     str ULSUM, [TEMP1]
     add LINDEX, LINDEX, 1
     b loop
