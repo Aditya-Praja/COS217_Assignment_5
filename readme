@@ -113,7 +113,62 @@ particular, what bugs are in your submission?
 ------------------------------------------------------------------------
 What is your mywc program test plan?
 
+Boundary Tests:
+1. mywcempty.txt: 
+An empty file to test if the program can handle files with no content.
+It tests the boundary case where getchar() returns EOF immediately
 
+2. mywcspaces.txt:
+A file with only spaces and tabs to test if the program correctly counts
+whitespace characters and does not miscount them as words or lines. 
+Ensures spaces are handled correctly.
+
+3. mywcnewline.txt:
+This file contains exactly one newline character. It tests that the 
+program counts one line, zero words, and one character.
+Checks if newlines are treated as both characters and line delimiters.
+
+4. mywcHelloWorld.txt:
+A file with "hello world" with no newline at the end. Tests the program
+when the last word is proceeded by EOF.
+
+5. mywcHelloWorldEndWithSpace.txt:
+A file with "hello world " (with a space at the end). Tests the program
+when the last word is followed by a space before EOF, ensuring the 
+program doesn't miscount words.
+
+Statement Tests:
+1. mywcnewLines.txt: 
+Contains 20 lines of text with words separated by spaces and terminated 
+by newlines. This file executes: the main loop reading characters 
+(lines 19-22, 72-79), character counting (lines 24-28), the isspace 
+branch to spaceChar for spaces and newlines (lines 30-32, 34-47), 
+word end detection incrementing lWordCount when transitioning from word 
+to whitespace (lines 38-46), the elseSpace branch for non-whitespace 
+characters (lines 49-58), word start detection setting iInWord to true 
+(lines 53-57), newline detection incrementing lLineCount (lines 62-70), 
+and the final printf and return (lines 88-96).
+
+2. mywcHelloWorld.txt: 
+This file ends with a word not followed by whitespace, which tests the 
+post loop word path where EOF is reached while iInWord is 
+true. This causes execution of lines 81-87, where the program checks 
+iInWord and increments lWordCount before printing.
+
+Stress Tests:
+1. mywcwordHundred.txt
+A smaller stress test with a single long line containing 100 words. 
+This stresses repeated word-start detection.
+
+2. mywcManyCharsManyLines.txt
+Created using a block of 80 a characters per line repeated 107 tiems. 
+This file stresses the main loop with a large input size and tests
+line counting performance and correctness with many short, simple lines
+
+3. mywcLongLine.txt
+A file with about 15500 characters in a single line without any newlines.
+This stresses the program's ability to handle long lines and tests
+character and word counting in the absence of line breaks.
 
 ------------------------------------------------------------------------
 What are the CPU times consumed by the programs from Parts 2a, 2b, 2d,
