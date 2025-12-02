@@ -71,7 +71,7 @@ no_clear:
 
     // lIndex = 0 
     mov LINDEX, 0
-    adds xzr, xzr, 0
+    adds xzr, xzr, xzr  // clear carry flag
     cbz LSUMLENGTH, endloop
 
 loop:
