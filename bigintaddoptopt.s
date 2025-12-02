@@ -56,7 +56,7 @@ after_larger:
     // clear array if necessary, conditonal first 
     ldr x9, [OSUM, LLENGTH]
     cmp x9, LSUMLENGTH
-    ble no_clear
+    ble not_cleared
 
     // memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long))
     add x0, OSUM, AULDIGITS      // pointer to aulDigits 
@@ -65,7 +65,7 @@ after_larger:
     lsl x2, x2, 3              // MAX_DIGITS * 8
     bl memset
 
-no_clear:
+not_cleared:
 
     // lIndex = 0 
     mov LINDEX, 0
@@ -137,4 +137,3 @@ finish:
     ldr x28, [sp, 80]
     add sp, sp, 96
     ret
-    
