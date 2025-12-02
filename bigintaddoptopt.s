@@ -50,7 +50,7 @@ BigInt_add:
     ldr x1, [OADDEND2, LLENGTH]
     cmp x0, x1
     ble second_larger
-    movbi LSUMLENGTH, x0
+    mov LSUMLENGTH, x0
     b after_larger
 
 second_larger:
