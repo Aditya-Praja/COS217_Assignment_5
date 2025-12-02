@@ -20,17 +20,6 @@
     .equ FALSE, 0
     .equ MAX_DIGITS, 32768
 
-// long BigInt_larger(long lLength1, long lLength2)
-
-    .global BigInt_larger
-BigInt_larger:
-    cmp x0, x1
-    bgt first_larger
-    mov x0, x1
-    ret
-first_larger:
-    ret
-
 // int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
     .global BigInt_add
 BigInt_add:
@@ -59,9 +48,15 @@ BigInt_add:
     // lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength)
     ldr x0, [OADDEND1, LLENGTH]
     ldr x1, [OADDEND2, LLENGTH]
-    bl  BigInt_larger
-    mov LSUMLENGTH, x0
+    cmp x0, x1
+    ble second_larger
+    movbi LSUMLENGTH, x0
+    b after_larger
 
+second_larger:
+    mov LSUMLENGTH, x1
+
+after_larger:
     // clear array if necessary, conditonal first 
     ldr TEMP1, [OSUM, LLENGTH]
     cmp TEMP1, LSUMLENGTH
