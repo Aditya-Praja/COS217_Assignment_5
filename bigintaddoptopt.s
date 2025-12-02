@@ -72,29 +72,32 @@ no_clear:
     // lIndex = 0 
     mov LINDEX, 0
     adds xzr, xzr, xzr  // clear carry flag
-    cbz LSUMLENGTH, endloop
 
 loop:
-    // Add digit from a1
-    lsl TEMP1, LINDEX, 3
-    add TEMP2, OADDEND1, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    ldr TEMP3, [TEMP2]
+    sub TEMP1, LSUMLENGTH, LINDEX
+    cbz TEMP1, endloop
 
-    // add digit from a2
+    lsl x9, LINDEX, 3 
+
+    // add a1 digits
+    add TEMP3, OADDEND1, AULDIGITS
+    add TEMP3, TEMP3, x9
+    ldr TEMP3, [TEMP3]
+    
+    // add a2 digits
     add TEMP2, OADDEND2, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
+    add TEMP2, TEMP2, x9
     ldr TEMP2, [TEMP2]
 
+    // add with carry
     adcs ULSUM, TEMP3, TEMP2
 
     // storing in sum
-    add TEMP2, OSUM, AULDIGITS
-    add TEMP2, TEMP2, TEMP1
-    str ULSUM, [TEMP2]
+    add TEMP1, OSUM, AULDIGITS
+    add TEMP1, TEMP1, x9
+    str ULSUM, [TEMP1]
     add LINDEX, LINDEX, 1
-    cmp LINDEX, LSUMLENGTH
-    blt loop
+    b loop
 
 endloop:
     // after loop
